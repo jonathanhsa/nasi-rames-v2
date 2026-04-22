@@ -234,7 +234,9 @@ class HomeController extends Controller
             } else {
                 return response()->json([
                     'success' => false, 
-                    'message' => $data['message'] ?? 'Gagal membuat transaksi Duitku'
+                    'message' => $data['Message'] ?? $data['message'] ?? 'Gagal membuat transaksi Duitku',
+                    'debug_data' => $data,
+                    'status_code' => $response->status()
                 ]);
             }
         } catch (\Exception $e) {
