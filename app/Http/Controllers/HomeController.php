@@ -215,7 +215,8 @@ class HomeController extends Controller
             'callbackUrl' => $callbackUrl,
             'returnUrl' => $returnUrl,
             'signature' => $signature,
-            'expiryPeriod' => $expiryPeriod
+            'expiryPeriod' => $expiryPeriod,
+            'paymentMethod' => 'VC' // Default Virtual Account
         ];
 
         $url = config('duitku.is_production') 
