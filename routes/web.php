@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/chat', [ChatController::class, 'sendMessage']);
 });
 
+Route::post('/callback', [HomeController::class, 'callback'])->name('payment.callback');
+
 Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::get('/menus', [AdminController::class, 'menus'])->name('admin.menus');

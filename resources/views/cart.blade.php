@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- Midtrans Snap JS -->
-<script src="{{ config('midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
+<!-- Duitku Payment Integration -->
 
 <section class="hero" style="min-height: auto; padding: 6rem 0 3rem 0; background: var(--surface);">
     <div class="container text-center animate-fade-in-up">
@@ -82,22 +81,8 @@
                     });
                     const data = await response.json();
                     
-                    if (data.success && data.snap_token) {
-                        window.snap.pay(data.snap_token, {
-                            onSuccess: function(result){
-                                document.getElementById('payment-success-form').submit();
-                            },
-                            onPending: function(result){
-                                document.getElementById('payment-success-form').submit();
-                            },
-                            onError: function(result){
-                                alert('Pembayaran gagal!');
-                                this.isProcessing = false;
-                            },
-                            onClose: () => {
-                                this.isProcessing = false;
-                            }
-                        });
+                    if (data.success && data.payment_url) {
+                        window.location.href = data.payment_url;
                     } else {
                         alert(data.message || 'Terjadi kesalahan');
                         this.isProcessing = false;
@@ -162,7 +147,7 @@
                     </form>
                 </div>
                 <div class="text-center mt-1">
-                    <small style="color: var(--text-muted);"><i class="fa-solid fa-shield-halved"></i> Pembayaran aman didukung oleh <strong>Midtrans</strong></small>
+                    <small style="color: var(--text-muted);"><i class="fa-solid fa-shield-halved"></i> Pembayaran aman didukung oleh <strong>Duitku</strong></small>
                 </div>
             </div>
         </div>

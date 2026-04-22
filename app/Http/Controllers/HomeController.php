@@ -179,59 +179,101 @@ class HomeController extends Controller
                 : redirect()->back()->withErrors(['cart' => 'Keranjang kosong!']);
         }
 
-        // Set your Merchant Server Key
-        \Midtrans\Config::$serverKey = config('midtrans.server_key');
-        // Set to Development/Sandbox Environment (default). Set to true for Production Environment (accept real transaction).
-        \Midtrans\Config::$isProduction = config('midtrans.is_production');
-        // Set sanitization on (default)
-        \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
-        // Set 3DS transaction for credit card to true
-        \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
+        $merchantCode = config('duitku.merchant_code');
+        $apiKey = config('duitku.api_key');
+        $paymentAmount = $order->total_price;
+        $merchantOrderId = $order->id . '-' . time();
+        $productDetails = "Pembayaran Pesanan #" . $order->id;
+        $email = Auth::user()->email ?? 'customer@example.com';
+        $customerVaName = Auth::user()->name;
+        $callbackUrl = 'https://nasi-rames-v2-production.up.railway.app/callback';
+        $returnUrl = route('home');
+        $expiryPeriod = 60; // 60 minutes
+
+        $signature = md5($merchantCode . $merchantOrderId . $paymentAmount . $apiKey);
 
         $itemDetails = [];
         foreach ($order->items as $item) {
             $itemDetails[] = [
-                'id' => $item->menu_id,
-                'price' => $item->price,
-                'quantity' => $item->quantity,
-                'name' => $item->menu->name
+                'name' => $item->menu->name,
+                'price' => (int)$item->price,
+                'quantity' => (int)$item->quantity
             ];
         }
 
-        $params = array(
-            'transaction_details' => array(
-                'order_id' => $order->id . '-' . time(), // append time to avoid duplicate order_id
-                'gross_amount' => $order->total_price,
-            ),
-            'item_details' => $itemDetails,
-            'customer_details' => array(
-                'first_name' => Auth::user()->name,
-                'email' => Auth::user()->email ?? 'customer@example.com',
-                'phone' => Auth::user()->phone ?? '08111222333',
-            ),
-        );
+        $params = [
+            'merchantCode' => $merchantCode,
+            'paymentAmount' => (int)$paymentAmount,
+            'merchantOrderId' => $merchantOrderId,
+            'productDetails' => $productDetails,
+            'additionalParam' => '',
+            'merchantUserInfo' => '',
+            'customerVaName' => $customerVaName,
+            'email' => $email,
+            'phoneNumber' => Auth::user()->phone ?? '',
+            'itemDetails' => $itemDetails,
+            'callbackUrl' => $callbackUrl,
+            'returnUrl' => $returnUrl,
+            'signature' => $signature,
+            'expiryPeriod' => $expiryPeriod
+        ];
+
+        $url = config('duitku.is_production') 
+            ? 'https://passport.duitku.com/webapi/api/merchant/v2/inquiry' 
+            : 'https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry';
 
         try {
-            $snapToken = \Midtrans\Snap::getSnapToken($params);
-            
-            // Mark order as processing (or we can keep it pending until webhook, but for simplicity we'll just return token)
-            return response()->json([
-                'success' => true,
-                'snap_token' => $snapToken
-            ]);
-            
+            $response = \Illuminate\Support\Facades\Http::post($url, $params);
+            $data = $response->json();
+
+            if (isset($data['paymentUrl'])) {
+                return response()->json([
+                    'success' => true,
+                    'payment_url' => $data['paymentUrl']
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false, 
+                    'message' => $data['message'] ?? 'Gagal membuat transaksi Duitku'
+                ]);
+            }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
+    public function callback(Request $request)
+    {
+        $apiKey = config('duitku.api_key');
+        $merchantCode = $request->merchantCode;
+        $amount = $request->amount;
+        $merchantOrderId = $request->merchantOrderId;
+        $productDetail = $request->productDetail;
+        $additionalParam = $request->additionalParam;
+        $paymentCode = $request->paymentCode;
+        $resultCode = $request->resultCode;
+        $signature = $request->signature;
+
+        $calcSignature = md5($merchantCode . $amount . $merchantOrderId . $apiKey);
+
+        if ($signature == $calcSignature) {
+            if ($resultCode == '00') {
+                // Payment success
+                $orderId = explode('-', $merchantOrderId)[0];
+                $order = Order::find($orderId);
+                if ($order && $order->status == 'pending') {
+                    $order->status = 'completed';
+                    $order->save();
+                }
+            }
+            return response('OK', 200);
+        } else {
+            return response('Invalid signature', 400);
+        }
+    }
+
     public function paymentSuccess(Request $request)
     {
-        $order = Order::where('user_id', Auth::id())->where('status', 'pending')->first();
-        if ($order) {
-            $order->status = 'completed';
-            $order->save();
-        }
         return redirect(route('home'))->with('success', 'Pembayaran berhasil! Pesanan Anda sedang diproses.');
     }
 }
