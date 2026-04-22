@@ -9,6 +9,20 @@ use App\Http\Controllers\ChatController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/menu', [HomeController::class, 'menu'])->name('menu');
 
+// Temporary route to setup admin
+Route::get('/setup-admin', function() {
+    $admin = \App\Models\User::where('email', 'admin@ibuida.com')->first();
+    if (!$admin) {
+        \App\Models\User::create([
+            'name' => 'Admin Ibu Ida',
+            'email' => 'admin@ibuida.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'is_admin' => true,
+        ]);
+        return "Admin created successfully! Silakan login di /login";
+    }
+    return "Admin already exists.";
+});
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
