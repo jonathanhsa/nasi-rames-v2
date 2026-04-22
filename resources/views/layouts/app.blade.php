@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kantin Ibu Ida - Nasi Rames Terbaik</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('cart', {
+                @auth
+                count: {{ \App\Models\OrderItem::whereHas('order', function($q) { $q->where('user_id', auth()->id())->where('status', 'pending'); })->sum('quantity') }},
+                @else
+                count: 0,
+                @endauth
+                updateCount(newCount) {
+                    this.count = newCount;
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    
+    <nav class="navbar animate-fade-in-up">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <i class="fa-solid fa-bowl-rice" style="color: var(--primary)"></i> 
+                Kantin<span>IbuIda</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="{{ route('home') }}" class="nav-link">Home</a>
+                <a href="{{ route('menu') }}" class="nav-link">Menu</a>
+                
+                @auth
+                    @if(auth()->user()->is_admin)
+                        <a href="/admin" class="nav-link">Admin Panel</a>
+                    @else
+                        <a href="javascript:void(0);" onclick="document.querySelector('.chat-toggle').click();" class="nav-link">
+                            <i class="fa-solid fa-headset"></i> Live Chat
+                        </a>
+                    @endif
+                    
+                    <a href="{{ route('cart') }}" class="nav-link" style="position: relative;" x-data>
+                        <i class="fa-solid fa-cart-shopping"></i> Keranjang
+                        <span class="badge" x-show="$store.cart.count > 0" x-text="$store.cart.count"></span>
+                    </a>
+
+                    <div style="position:relative; margin-left: 0.5rem;" x-data="{ open: false }">
+                        <button @click="open = !open" class="btn btn-outline" style="padding: 0.5rem 1rem;">
+                            <i class="fa-solid fa-user"></i> {{ auth()->user()->name }}
+                        </button>
+                        <div x-show="open" @click.away="open = false" style="position:absolute; top:120%; right:0; background:white; padding:1rem; border-radius:var(--radius-md); box-shadow:var(--shadow-strong); min-width: 200px; display:none;" :style="{display: open ? 'block' : 'none'}">
+                            <a href="{{ route('profile') }}" class="btn btn-outline" style="width:100%; margin-bottom: 0.5rem; justify-content: center;">Profil Saya</a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="btn btn-primary" style="width:100%">Logout</button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
+                @endauth
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        @yield('content')
+    </main>
+
+    @if(auth()->check() && !auth()->user()->is_admin)
+        @include('components.chat-widget')
+    @endif
+
+</body>
+</html>
