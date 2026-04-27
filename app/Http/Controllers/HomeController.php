@@ -66,6 +66,15 @@ class HomeController extends Controller
         }
 
         $existingItem = OrderItem::where('order_id', $order->id)->where('menu_id', $menu->id)->first();
+        $currentQty = $existingItem ? $existingItem->quantity : 0;
+
+        if ($currentQty + $request->quantity > $menu->stock) {
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Stok tidak mencukupi. Maksimal: ' . $menu->stock]);
+            }
+            return redirect()->back()->withErrors(['quantity' => 'Stok tidak mencukupi. Maksimal: ' . $menu->stock]);
+        }
+
         if ($existingItem) {
             $existingItem->quantity += $request->quantity;
             $existingItem->save();
@@ -104,6 +113,12 @@ class HomeController extends Controller
         })->firstOrFail();
 
         if ($request->action == 'increase') {
+            if ($item->quantity + 1 > $item->menu->stock) {
+                if (request()->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Stok maksimal: ' . $item->menu->stock]);
+                }
+                return redirect()->back()->withErrors(['quantity' => 'Stok maksimal tercapai']);
+            }
             $item->quantity += 1;
             $item->save();
         } else {

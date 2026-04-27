@@ -36,9 +36,7 @@
             <a href="/admin/users" class="nav-item {{ request()->is('admin/users*') ? 'active' : '' }}">
                 <i class="fa-solid fa-users"></i> Users
             </a>
-            <a href="/admin/chats" class="nav-item {{ request()->is('admin/chats*') ? 'active' : '' }}">
-                <i class="fa-solid fa-comments"></i> Live Chat
-            </a>
+
         </div>
         
         <div style="position:absolute; bottom:2rem; width:calc(100% - 4rem);">

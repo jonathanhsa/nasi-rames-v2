@@ -47,11 +47,7 @@
                 @auth
                     @if(auth()->user()->is_admin)
                         <a href="/admin" class="nav-link">Admin Panel</a>
-                    @else
-                        <a href="javascript:void(0);" onclick="document.querySelector('.chat-toggle').click();" class="nav-link">
-                            <i class="fa-solid fa-headset"></i> Live Chat
-                        </a>
-                    @endif
+
                     
                     <a href="{{ route('cart') }}" class="nav-link" style="position: relative;" x-data>
                         <i class="fa-solid fa-cart-shopping"></i> Keranjang
@@ -81,9 +77,7 @@
         @yield('content')
     </main>
 
-    @if(auth()->check() && !auth()->user()->is_admin)
-        @include('components.chat-widget')
-    @endif
+
 
 </body>
 </html>

@@ -3,7 +3,7 @@
 @section('title', 'Manajemen Menu')
 
 @section('content')
-<div class="flex flex-column gap-2">
+<div class="mb-4">
     
     <div class="card">
         <h3>Tambah Menu Baru</h3>
@@ -27,6 +27,11 @@
             <div class="form-group">
                 <label class="label">Harga (Rp)</label>
                 <input type="number" name="price" class="input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="label">Stok</label>
+                <input type="number" name="stock" class="input" value="0" required>
             </div>
 
             <div class="form-group">
@@ -54,6 +59,7 @@
                         <th>Gambar</th>
                         <th>Nama</th>
                         <th>Harga</th>
+                        <th>Stok</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -66,6 +72,7 @@
                             <small>{{ $menu->category }}</small>
                         </td>
                         <td>Rp {{ number_format($menu->price, 0, ',', '.') }}</td>
+                        <td>{{ $menu->stock }}</td>
                         <td>
                             <div class="flex gap-1">
                                 <a href="{{ route('admin.menus.edit', $menu->id) }}" class="action-btn edit"><i class="fa-solid fa-edit"></i></a>

@@ -29,6 +29,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required',
             'price' => 'required|numeric',
+            'stock' => 'required|integer|min:0',
         ]);
 
         $data = $request->all();
@@ -54,6 +55,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required',
             'price' => 'required|numeric',
+            'stock' => 'required|integer|min:0',
         ]);
 
         $data = $request->all();

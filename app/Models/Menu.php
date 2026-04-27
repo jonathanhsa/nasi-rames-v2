@@ -15,6 +15,7 @@ class Menu extends Model
         'price',
         'points_reward',
         'image_url',
-        'category'
+        'category',
+        'stock'
     ];
 }

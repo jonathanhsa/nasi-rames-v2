@@ -36,6 +36,11 @@
         </div>
 
         <div class="form-group">
+            <label class="label">Stok</label>
+            <input type="number" name="stock" class="input" value="{{ old('stock', $menu->stock) }}" required>
+        </div>
+
+        <div class="form-group">
             <label class="label">Kategori</label>
             <input type="text" name="category" class="input" value="{{ old('category', $menu->category) }}">
         </div>

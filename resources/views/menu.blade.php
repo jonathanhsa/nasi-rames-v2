@@ -35,11 +35,16 @@
                     <!-- Bottom section forced to bottom -->
                     <div style="margin-top: auto;">
                         <div class="menu-price">Rp {{ number_format($menu->price, 0, ',', '.') }}</div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">Sisa Stok: {{ $menu->stock }}</div>
                         
                         @auth
                         <div class="mt-1" x-data="{ 
                             quantity: 1,
                             async addToCart() {
+                                if (this.quantity > {{ $menu->stock }}) {
+                                    alert('Stok tidak mencukupi! Sisa: {{ $menu->stock }}');
+                                    return;
+                                }
                                 const response = await fetch('{{ route('order.add') }}', {
                                     method: 'POST',
                                     headers: {
@@ -56,13 +61,19 @@
                                 if (data.success) {
                                     $store.cart.updateCount(data.cartCount);
                                     alert('Berhasil ditambahkan ke keranjang!');
+                                } else {
+                                    alert(data.message || 'Gagal menambahkan pesanan');
                                 }
                             }
                         }">
+                            @if($menu->stock > 0)
                             <div class="flex gap-1">
-                                <input type="number" x-model="quantity" min="1" class="input" style="width:80px; padding: 0.5rem;">
+                                <input type="number" x-model="quantity" min="1" max="{{ $menu->stock }}" class="input" style="width:80px; padding: 0.5rem;">
                                 <button @click="addToCart()" class="btn btn-primary" style="flex-grow:1; padding: 0.5rem;"><i class="fa-solid fa-cart-plus"></i> Tambah</button>
                             </div>
+                            @else
+                            <button class="btn btn-outline" style="width:100%; padding: 0.5rem;" disabled>Stok Habis</button>
+                            @endif
                         </div>
                         @else
                         <a href="{{ route('login') }}" class="btn btn-outline" style="width:100%; padding: 0.5rem;">Login untuk Pesan</a>

@@ -49,6 +49,8 @@
                     } else {
                         document.getElementById(`item-qty-${itemId}`).innerText = data.itemQuantity;
                     }
+                } else {
+                    alert(data.message || 'Gagal mengubah jumlah');
                 }
             },
             async removeItem(itemId) {
