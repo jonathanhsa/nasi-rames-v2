@@ -47,6 +47,7 @@
                 @auth
                     @if(auth()->user()->is_admin)
                         <a href="/admin" class="nav-link">Admin Panel</a>
+                    @endif
 
                     
                     <a href="{{ route('cart') }}" class="nav-link" style="position: relative;" x-data>
