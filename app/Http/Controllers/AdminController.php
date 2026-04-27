@@ -153,6 +153,9 @@ class AdminController extends Controller
         $order->total_price = $totalPrice;
         $order->save();
 
+        // Re-fetch to ensure fresh data
+        $order = Order::with('items.menu')->find($order->id);
+
         // Duitku API
         $merchantCode = config('duitku.merchant_code');
         $apiKey = config('duitku.api_key');
@@ -170,7 +173,7 @@ class AdminController extends Controller
         $itemDetails = [];
         foreach ($order->items as $orderItem) {
             $itemDetails[] = [
-                'name' => $orderItem->menu->name,
+                'name' => $orderItem->menu ? $orderItem->menu->name : 'Menu',
                 'price' => (int)$orderItem->price,
                 'quantity' => (int)$orderItem->quantity
             ];

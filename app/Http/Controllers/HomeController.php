@@ -201,6 +201,9 @@ class HomeController extends Controller
         $order->location = $request->location;
         $order->save();
 
+        // Re-fetch to ensure fresh items and relations
+        $order = Order::with('items.menu')->find($order->id);
+
         $merchantCode = config('duitku.merchant_code');
         $apiKey = config('duitku.api_key');
         $paymentAmount = (int)$order->total_price;
@@ -217,7 +220,7 @@ class HomeController extends Controller
         $itemDetails = [];
         foreach ($order->items as $item) {
             $itemDetails[] = [
-                'name' => $item->menu->name,
+                'name' => $item->menu ? $item->menu->name : 'Menu',
                 'price' => (int)$item->price,
                 'quantity' => (int)$item->quantity
             ];
