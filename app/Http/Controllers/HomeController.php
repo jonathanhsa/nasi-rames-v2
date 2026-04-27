@@ -216,7 +216,7 @@ class HomeController extends Controller
             'returnUrl' => $returnUrl,
             'signature' => $signature,
             'expiryPeriod' => $expiryPeriod,
-            'paymentMethod' => 'VC' // Default Virtual Account
+            'paymentMethod' => $request->paymentMethod ?? 'SP' // QRIS as default
         ];
 
         $url = config('duitku.is_production') 

@@ -28,6 +28,7 @@
         @if($order && $order->items->count() > 0)
         <div class="grid" style="grid-template-columns: 2fr 1fr;" x-data="{ 
             totalPrice: '{{ number_format($order->total_price, 0, ',', '.') }}',
+            paymentMethod: 'SP',
             async updateQuantity(itemId, action) {
                 const response = await fetch(`/cart/update/${itemId}`, {
                     method: 'POST',
@@ -68,7 +69,7 @@
                 }
             },
             isProcessing: false,
-            async checkout() {
+            async checkout(paymentMethod) {
                 this.isProcessing = true;
                 try {
                     const response = await fetch(`{{ route('order.checkout') }}`, {
@@ -77,7 +78,8 @@
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Accept': 'application/json'
-                        }
+                        },
+                        body: JSON.stringify({ paymentMethod: paymentMethod })
                     });
                     const data = await response.json();
                     
@@ -131,14 +133,34 @@
                 </div>
 
                 <div class="mb-2">
+                    <label class="label">Pilih Metode Pembayaran</label>
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+                        <label class="card" :style="paymentMethod === 'SP' ? 'border-color: var(--accent); background: rgba(0,210,211,0.05);' : 'cursor: pointer;'" @click="paymentMethod = 'SP'">
+                            <input type="radio" name="payment_method" value="SP" x-model="paymentMethod" style="display: none;">
+                            <div class="text-center">
+                                <i class="fa-solid fa-qrcode" style="font-size: 1.5rem; color: var(--accent);"></i>
+                                <div style="font-size: 0.8rem; font-weight: bold; margin-top: 0.5rem;">QRIS</div>
+                            </div>
+                        </label>
+                        <label class="card" :style="paymentMethod === 'M1' ? 'border-color: var(--accent); background: rgba(0,210,211,0.05);' : 'cursor: pointer;'" @click="paymentMethod = 'M1'">
+                            <input type="radio" name="payment_method" value="M1" x-model="paymentMethod" style="display: none;">
+                            <div class="text-center">
+                                <i class="fa-solid fa-building-columns" style="font-size: 1.5rem; color: var(--accent);"></i>
+                                <div style="font-size: 0.8rem; font-weight: bold; margin-top: 0.5rem;">Virtual Account</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-2">
                     <label class="label">Informasi Pembayaran</label>
                     <p class="text-sm mt-1" style="color: var(--text-muted);">
-                        Anda akan diarahkan ke halaman pembayaran aman Midtrans untuk memilih metode pembayaran (QRIS, GoPay, Virtual Account, dll).
+                        Pembayaran akan diproses melalui gateway aman Duitku.
                     </p>
                 </div>
 
                 <div class="mt-2">
-                    <button @click="checkout" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 1rem;" x-bind:disabled="isProcessing">
+                    <button @click="checkout(paymentMethod)" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 1rem;" x-bind:disabled="isProcessing">
                         <span x-show="!isProcessing"><i class="fa-solid fa-lock"></i> Bayar Sekarang</span>
                         <span x-show="isProcessing" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i> Memproses...</span>
                     </button>
