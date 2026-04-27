@@ -236,7 +236,7 @@ class HomeController extends Controller
             'customerVaName' => $customerVaName,
             'email' => $email,
             'phoneNumber' => Auth::user()->phone ?? '',
-            'itemDetails' => $itemDetails,
+            // 'itemDetails' => $itemDetails, // Di-comment agar tidak error mismatch harga di Duitku
             'callbackUrl' => $callbackUrl,
             'returnUrl' => $returnUrl,
             'signature' => $signature,
