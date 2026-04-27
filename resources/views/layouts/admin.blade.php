@@ -36,6 +36,9 @@
             <a href="/admin/users" class="nav-item {{ request()->is('admin/users*') ? 'active' : '' }}">
                 <i class="fa-solid fa-users"></i> Users
             </a>
+            <a href="/admin/kasir" class="nav-item {{ request()->is('admin/kasir*') ? 'active' : '' }}">
+                <i class="fa-solid fa-cash-register"></i> Kasir
+            </a>
 
         </div>
         

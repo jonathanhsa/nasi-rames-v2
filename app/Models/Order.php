@@ -14,6 +14,7 @@ class Order extends Model
         'status',
         'total_price',
         'earned_points',
+        'location',
     ];
 
     public function user()

@@ -60,5 +60,7 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix
     Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
     Route::post('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.status');
     
+    Route::get('/kasir', [AdminController::class, 'kasir'])->name('admin.kasir');
+    Route::post('/kasir/checkout', [AdminController::class, 'kasirCheckout'])->name('admin.kasir.checkout');
 
 });

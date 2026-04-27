@@ -14,6 +14,7 @@
                 <tr>
                     <th>ID Pesanan</th>
                     <th>Pelanggan</th>
+                    <th>Lokasi</th>
                     <th>Detail Pesanan</th>
                     <th>Total Harga</th>
                     <th>Status & Aksi</th>
@@ -24,6 +25,7 @@
                 <tr>
                     <td>#{{ $order->id }}<br><small>{{ $order->created_at->format('d M Y H:i') }}</small></td>
                     <td>{{ $order->user->name }}</td>
+                    <td><small style="color: var(--text-muted);">{{ $order->location ?? '-' }}</small></td>
                     <td>
                         <ul style="padding-left:1rem; margin:0; font-size:0.9rem;">
                             @foreach($order->items as $item)

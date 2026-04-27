@@ -29,6 +29,7 @@
         <div class="grid" style="grid-template-columns: 2fr 1fr;" x-data="{ 
             totalPrice: '{{ number_format($order->total_price, 0, ',', '.') }}',
             paymentMethod: 'SP',
+            location: '',
             async updateQuantity(itemId, action) {
                 const response = await fetch(`/cart/update/${itemId}`, {
                     method: 'POST',
@@ -72,6 +73,10 @@
             },
             isProcessing: false,
             async checkout(paymentMethod) {
+                if (!this.location.trim()) {
+                    alert('Mohon masukkan lokasi pengiriman!');
+                    return;
+                }
                 this.isProcessing = true;
                 try {
                     const response = await fetch(`{{ route('order.checkout') }}`, {
@@ -81,7 +86,7 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ paymentMethod: paymentMethod })
+                        body: JSON.stringify({ paymentMethod: paymentMethod, location: this.location })
                     });
                     const data = await response.json();
                     
@@ -132,6 +137,11 @@
                 <div class="flex justify-between mt-2 mb-1">
                     <span style="color: var(--text-muted);">Total Harga:</span>
                     <span style="font-weight: bold;">Rp <span x-text="totalPrice"></span></span>
+                </div>
+
+                <div class="mb-2">
+                    <label class="label">Lokasi Pengiriman *</label>
+                    <textarea x-model="location" class="input" rows="2" placeholder="Masukkan alamat lengkap atau detail lokasi untuk diantar..." required></textarea>
                 </div>
 
                 <div class="mb-2">

@@ -107,4 +107,114 @@ class AdminController extends Controller
         $order->save();
         return back()->with('success', 'Order status updated');
     }
+
+    public function kasir()
+    {
+        $menus = Menu::where('stock', '>', 0)->get();
+        return view('admin.kasir', compact('menus'));
+    }
+
+    public function kasirCheckout(Request $request)
+    {
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.id' => 'required|exists:menus,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'paymentMethod' => 'required|string',
+            'customerName' => 'required|string',
+        ]);
+
+        $order = Order::create([
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
+            'status' => 'pending',
+            'total_price' => 0,
+            'location' => 'Kasir - Pelanggan: ' . $request->customerName,
+        ]);
+
+        $totalPrice = 0;
+        foreach ($request->items as $item) {
+            $menu = Menu::find($item['id']);
+            if ($menu->stock < $item['quantity']) {
+                return response()->json(['success' => false, 'message' => 'Stok ' . $menu->name . ' tidak mencukupi (Sisa: ' . $menu->stock . ')']);
+            }
+            // Kurangi stok
+            $menu->stock -= $item['quantity'];
+            $menu->save();
+
+            \App\Models\OrderItem::create([
+                'order_id' => $order->id,
+                'menu_id' => $menu->id,
+                'quantity' => $item['quantity'],
+                'price' => $menu->price
+            ]);
+            $totalPrice += ($menu->price * $item['quantity']);
+        }
+
+        $order->total_price = $totalPrice;
+        $order->save();
+
+        // Duitku API
+        $merchantCode = config('duitku.merchant_code');
+        $apiKey = config('duitku.api_key');
+        $paymentAmount = $order->total_price;
+        $merchantOrderId = $order->id . '-POS-' . time();
+        $productDetails = "Pembayaran Pesanan POS #" . $order->id;
+        $email = \Illuminate\Support\Facades\Auth::user()->email;
+        $customerVaName = $request->customerName;
+        $callbackUrl = 'https://nasi-rames-v2-production.up.railway.app/callback';
+        $returnUrl = route('admin.kasir'); // Kembali ke kasir setelah bayar
+        $expiryPeriod = 60; 
+
+        $signature = md5($merchantCode . $merchantOrderId . $paymentAmount . $apiKey);
+
+        $itemDetails = [];
+        foreach ($order->items as $orderItem) {
+            $itemDetails[] = [
+                'name' => $orderItem->menu->name,
+                'price' => (int)$orderItem->price,
+                'quantity' => (int)$orderItem->quantity
+            ];
+        }
+
+        $params = [
+            'merchantCode' => $merchantCode,
+            'paymentAmount' => (int)$paymentAmount,
+            'merchantOrderId' => $merchantOrderId,
+            'productDetails' => $productDetails,
+            'additionalParam' => '',
+            'merchantUserInfo' => '',
+            'customerVaName' => $customerVaName,
+            'email' => $email,
+            'phoneNumber' => '',
+            'itemDetails' => $itemDetails,
+            'callbackUrl' => $callbackUrl,
+            'returnUrl' => $returnUrl,
+            'signature' => $signature,
+            'expiryPeriod' => $expiryPeriod,
+            'paymentMethod' => $request->paymentMethod
+        ];
+
+        $url = config('duitku.is_production') 
+            ? 'https://passport.duitku.com/webapi/api/merchant/v2/inquiry' 
+            : 'https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry';
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::post($url, $params);
+            $data = $response->json();
+
+            if (isset($data['paymentUrl'])) {
+                return response()->json([
+                    'success' => true,
+                    'payment_url' => $data['paymentUrl']
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false, 
+                    'message' => $data['Message'] ?? $data['message'] ?? 'Gagal memproses Duitku',
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
 }

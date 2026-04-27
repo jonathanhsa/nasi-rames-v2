@@ -186,6 +186,10 @@ class HomeController extends Controller
 
     public function checkout(Request $request)
     {
+        $request->validate([
+            'location' => 'required|string|max:1000'
+        ]);
+
         $order = Order::where('user_id', Auth::id())->where('status', 'pending')->with('items.menu')->first();
         
         if (!$order || $order->items->count() == 0) {
@@ -193,6 +197,9 @@ class HomeController extends Controller
                 ? response()->json(['success' => false, 'message' => 'Keranjang kosong!']) 
                 : redirect()->back()->withErrors(['cart' => 'Keranjang kosong!']);
         }
+
+        $order->location = $request->location;
+        $order->save();
 
         $merchantCode = config('duitku.merchant_code');
         $apiKey = config('duitku.api_key');
