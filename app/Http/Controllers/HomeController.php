@@ -292,6 +292,13 @@ class HomeController extends Controller
                 if ($order && $order->status == 'pending') {
                     $order->status = 'completed';
                     $order->save();
+
+                    // Update stok menu
+                    foreach ($order->items as $item) {
+                        if ($item->menu) {
+                            $item->menu->decrement('stock', $item->quantity);
+                        }
+                    }
                 }
             }
             return response('OK', 200);
