@@ -38,4 +38,14 @@
         @endforelse
     </div>
 </div>
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @foreach($messages as $userId => $userMessages)
+        const chatbox{{$userId}} = document.getElementById('chatbox-{{$userId}}');
+        if (chatbox{{$userId}}) chatbox{{$userId}}.scrollTop = chatbox{{$userId}}.scrollHeight;
+        @endforeach
+    });
+</script>
+@endpush
 @endsection

@@ -3,7 +3,7 @@
 @section('title', 'Manajemen Menu')
 
 @section('content')
-<div class="grid" style="grid-template-columns: 1fr 2fr;">
+<div class="flex flex-column gap-2">
     
     <div class="card">
         <h3>Tambah Menu Baru</h3>
@@ -84,4 +84,14 @@
     </div>
 
 </div>
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @foreach($messages as $userId => $userMessages)
+        const chatbox{{$userId}} = document.getElementById('chatbox-{{$userId}}');
+        if (chatbox{{$userId}}) chatbox{{$userId}}.scrollTop = chatbox{{$userId}}.scrollHeight;
+        @endforeach
+    });
+</script>
+@endpush
 @endsection

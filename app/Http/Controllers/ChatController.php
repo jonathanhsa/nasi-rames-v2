@@ -37,7 +37,7 @@ class ChatController extends Controller
 
     public function adminChats()
     {
-        $messages = ChatMessage::with('user')->orderBy('created_at', 'desc')->get()->groupBy('user_id');
+        $messages = ChatMessage::with('user')->orderBy('created_at', 'asc')->get()->groupBy('user_id');
         return view('admin.chats', compact('messages'));
     }
 }
