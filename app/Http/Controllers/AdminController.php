@@ -156,7 +156,7 @@ class AdminController extends Controller
         // Duitku API
         $merchantCode = config('duitku.merchant_code');
         $apiKey = config('duitku.api_key');
-        $paymentAmount = $order->total_price;
+        $paymentAmount = (int)$order->total_price;
         $merchantOrderId = $order->id . '-POS-' . time();
         $productDetails = "Pembayaran Pesanan POS #" . $order->id;
         $email = \Illuminate\Support\Facades\Auth::user()->email;

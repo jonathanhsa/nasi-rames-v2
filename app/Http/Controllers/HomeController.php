@@ -203,7 +203,7 @@ class HomeController extends Controller
 
         $merchantCode = config('duitku.merchant_code');
         $apiKey = config('duitku.api_key');
-        $paymentAmount = $order->total_price;
+        $paymentAmount = (int)$order->total_price;
         $merchantOrderId = $order->id . '-' . time();
         $productDetails = "Pembayaran Pesanan #" . $order->id;
         $email = Auth::user()->email ?? 'customer@example.com';
