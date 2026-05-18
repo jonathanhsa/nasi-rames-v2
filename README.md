@@ -1,66 +1,85 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Nasi Rames V2
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Nasi Rames V2 adalah aplikasi web e-commerce dan kasir (Point of Sale) untuk pemesanan makanan, khususnya Nasi Rames. Aplikasi ini dibangun menggunakan framework **Laravel**. 
 
-## About Laravel
+Aplikasi ini melayani dua jenis pengguna utama:
+1. **Pelanggan (Customer):** Dapat melihat menu, memasukkan pesanan ke keranjang (cart), melakukan checkout, dan mengelola profil.
+2. **Administrator:** Dapat mengelola data menu (termasuk stok), melihat dan memproses pesanan, mengelola pengguna (users), serta memiliki fitur Kasir (POS) untuk melayani pesanan secara langsung di tempat.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📂 Struktur Proyek
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Proyek ini menggunakan arsitektur MVC (Model-View-Controller) bawaan Laravel. Berikut adalah rincian struktur utama dalam proyek ini:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 1. Models (`app/Models`)
+Berisi representasi data dari database. Terdapat 4 model utama:
+- `User.php`: Menangani data pengguna (pelanggan dan admin).
+- `Menu.php`: Menangani data produk/makanan yang dijual, beserta harga dan informasi stok.
+- `Order.php`: Menangani data transaksi pesanan secara keseluruhan (termasuk total harga, status pesanan, dan lokasi/meja).
+- `OrderItem.php`: Menangani data detail item dari setiap pesanan (relasi antara pesanan dan menu).
 
-## Learning Laravel
+### 2. Controllers (`app/Http/Controllers`)
+Menangani logika bisnis aplikasi:
+- `HomeController.php`: Mengelola halaman utama, tampilan menu, keranjang belanja (cart), dan proses checkout pelanggan.
+- `AuthController.php`: Menangani proses autentikasi seperti Login, Register, dan Logout.
+- `AdminController.php`: Menangani seluruh fungsi halaman dashboard admin, termasuk CRUD menu, manajemen pengguna, pemrosesan status pesanan, serta fitur Kasir.
+- Controller lainnya: Terdapat juga `MenuController`, `OrderController`, dan `OrderItemController` (kemungkinan digunakan untuk API atau fungsi spesifik lainnya).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 3. Routes (`routes/web.php`)
+Mengatur jalur URL web. Dibagi menjadi beberapa kelompok:
+- **Public Routes:** `/` (Beranda), `/menu` (Lihat Menu), `/login`, `/register`.
+- **Customer Routes (Auth):** `/profile`, `/cart`, `/order`, `/checkout` (proses pembayaran).
+- **Admin Routes (Auth + Admin Middleware):** 
+  - `/admin` (Dashboard)
+  - `/admin/menus` (Manajemen Produk/Stok)
+  - `/admin/users` (Manajemen Pengguna)
+  - `/admin/orders` (Manajemen Pesanan)
+  - `/admin/kasir` (Sistem Kasir/Point of Sale)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 4. Views (`resources/views`)
+Tampilan antarmuka (UI) menggunakan sistem templating Blade:
+- `/`: Tampilan umum seperti `welcome.blade.php`, `menu.blade.php`, `cart.blade.php`, `profile.blade.php`.
+- `/admin`: Berisi semua antarmuka khusus halaman dashboard Administrator.
+- `/auth`: Tampilan form login dan register.
+- `/layouts` & `/components`: Komponen layout yang digunakan ulang di berbagai halaman.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 5. Database & Migrations (`database/migrations`)
+Struktur tabel database yang telah dibuat:
+- `users`: Data pengguna aplikasi.
+- `menus`: Data menu dengan tambahan atribut `stock`.
+- `orders`: Data pesanan dengan tambahan atribut `location`.
+- `order_items`: Detail menu yang dipesan pada setiap pesanan.
 
-## Laravel Sponsors
+## 🚀 Cara Menjalankan Proyek (Local Development)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. Pastikan Anda telah menginstal **PHP**, **Composer**, dan **Node.js**.
+2. Clone atau ekstrak proyek ini.
+3. Jalankan perintah instalasi dependency:
+   ```bash
+   composer install
+   npm install
+   ```
+4. Salin file `.env.example` menjadi `.env` dan sesuaikan konfigurasi database Anda (misalnya menggunakan SQLite atau MySQL):
+   ```bash
+   cp .env.example .env
+   ```
+5. Generate application key:
+   ```bash
+   php artisan key:generate
+   ```
+6. Jalankan migrasi dan seeder untuk membangun database:
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
+   *(Catatan: Proyek ini juga memiliki route sementara `/seed-db` untuk melakukan optimasi dan seeding database melalui browser).*
+7. Compile aset frontend (Tailwind/Vite):
+   ```bash
+   npm run dev
+   ```
+8. Jalankan local server Laravel:
+   ```bash
+   php artisan serve
+   ```
+9. Aplikasi dapat diakses melalui `http://localhost:8000`.
 
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+*README ini di-generate berdasarkan struktur aplikasi untuk memberikan pemahaman mengenai alur kerja dan arsitektur website Nasi Rames V2.*
