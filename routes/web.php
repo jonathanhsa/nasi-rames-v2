@@ -13,14 +13,15 @@ Route::get('/hello', function() {
     return "Hello! If you see this, the new code is deployed.";
 });
 
-// Temporary route to seed database
+// Temporary route to migrate and seed database
 Route::get('/seed-db', function() {
     try {
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-        return "Database seeded successfully!<br><br><b>Admin:</b> admin@ibuida.com / password<br><b>User:</b> user@test.com / password";
+        return "Database migrated and seeded successfully!<br><br><b>Admin:</b> admin@ibuida.com / password<br><b>User:</b> user@test.com / password";
     } catch (\Exception $e) {
-        return "Error seeding database: " . $e->getMessage();
+        return "Error migrating/seeding database: " . $e->getMessage();
     }
 });
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
