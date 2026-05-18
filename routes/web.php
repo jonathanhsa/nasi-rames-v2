@@ -18,10 +18,19 @@ Route::get('/seed-db', function() {
     try {
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-        return "Database migrated and seeded successfully!<br><br><b>Admin:</b> admin@ibuida.com / password<br><b>User:</b> user@test.com / password";
+        
+        \App\Models\User::updateOrCreate(
+            ['email' => 'admin@ibuida.com'],
+            [
+                'name' => 'Admin Ibu Ida',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'is_admin' => true,
+            ]
+        );
+        
+        return "Database migrated and admin user updated successfully!<br><br><b>Admin:</b> admin@ibuida.com / password";
     } catch (\Exception $e) {
-        return "Error migrating/seeding database: " . $e->getMessage();
+        return "Error: " . $e->getMessage();
     }
 });
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
